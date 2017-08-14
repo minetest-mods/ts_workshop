@@ -13,7 +13,6 @@ function ts_workshop.register_workshop(mod, name, def)
 	ts_workshop[mod][name].update_formspec_raw = def.update_formspec
 	ts_workshop[mod][name].update_inventory_raw = def.update_inventory
 
-
 	ts_workshop[mod][name].start = function(pos)
 		local node = minetest.get_node(pos)
 		if not (mod and name) then
@@ -60,11 +59,11 @@ function ts_workshop.register_workshop(mod, name, def)
 		end
 
 		local meta = minetest.get_meta(pos)
-		if meta:get_string("working_on") ~= "" then
+		local working_on = meta:get_string("working_on")
+		if working_on == "" then
 			return
 		end
 
-		local working_on = meta:get_string("working_on")
 
 		local progress = meta:get_int("progress")
 		progress = progress + 1
@@ -90,7 +89,7 @@ function ts_workshop.register_workshop(mod, name, def)
 		ts_workshop[mod][name].update_formspec(pos)
 	end
 
-	ts_workshop[mod][name].update_formpec = function(pos)
+	ts_workshop[mod][name].update_formspec = function(pos)
 		if not (mod and name) then
 			mod, name = minetest.get_node(pos).name:match("([^:]+):([^:]+)")
 		end
@@ -110,12 +109,13 @@ function ts_workshop.register_workshop(mod, name, def)
 			return
 		end
 		ts_workshop[mod][name].update_inventory_raw(pos)
-		ts_workshop[mod][name].update_formpec(pos)
+		ts_workshop[mod][name].update_formspec(pos)
 		ts_workshop[mod][name].start(pos)
 	end
 
 	ts_workshop[mod][name].on_receive_fields = function(pos, formname, fields, sender)
 		def.on_receive_fields(pos, formname, fields, sender)
+		ts_workshop[mod][name].update_inventory(pos)
 	end
 
 	ts_workshop[mod][name].on_construct = function(pos)
@@ -123,7 +123,7 @@ function ts_workshop.register_workshop(mod, name, def)
 		if not (mod and name) then
 			mod, name = minetest.get_node(pos).name:match("([^:]+):([^:]+)")
 		end
-		ts_workshop[mod][name].update_formpec(pos)
+		ts_workshop[mod][name].update_inventory(pos)
 	end
 
 	ts_workshop[mod][name].allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
@@ -160,7 +160,7 @@ function ts_workshop.register_workshop(mod, name, def)
 	end
 
 	ts_workshop[mod][name].can_dig = function(pos, player)
-		def.can_dig(pos, player)
+		return def.can_dig(pos, player)
 	end
 
 	local ndef = table.copy(def)
