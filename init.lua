@@ -9,9 +9,14 @@ function ts_workshop.register_workshop(mod, name, def)
 	end
 
 	ts_workshop[mod][name].enough_supply = def.enough_supply
-	ts_workshop[mod][name].remove_supply = def.remove_supply
+	ts_workshop[mod][name].remove_supply_raw = def.remove_supply
 	ts_workshop[mod][name].update_formspec_raw = def.update_formspec
 	ts_workshop[mod][name].update_inventory_raw = def.update_inventory
+
+	ts_workshop[mod][name].remove_supply = function(pos, selection)
+		ts_workshop[mod][name].remove_supply_raw(pos, selection)
+		ts_workshop[mod][name].update_inventory(pos)
+	end
 
 	ts_workshop[mod][name].start = function(pos)
 		local node = minetest.get_node(pos)
