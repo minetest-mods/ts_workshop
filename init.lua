@@ -81,7 +81,8 @@ function ts_workshop.register_workshop(mod, name, def)
 
 		if progress < duration then
 			meta:set_int("progress", progress)
-			minetest.after(0.2, ts_workshop[mod][name].step, pos)
+			local timer = minetest.get_node_timer(pos)
+			timer:start(0.2)
 		else
 			meta:set_int("progress", 0)
 			progress = 0
@@ -178,6 +179,12 @@ function ts_workshop.register_workshop(mod, name, def)
 	ndef.on_metadata_inventory_put = ts_workshop[mod][name].on_metadata_inventory_put
 	ndef.on_metadata_inventory_take = ts_workshop[mod][name].on_metadata_inventory_take
 	ndef.can_dig = ts_workshop[mod][name].can_dig
+	ndef.on_timer = function(pos, elapsed)
+		if not (mod and name) then
+			mod, name = minetest.get_node(pos).name:match("([^:]+):([^:]+)")
+		end
+		ts_workshop[mod][name].step(pos)
+	end
 
 	minetest.register_node(mod .. ":" .. name, ndef)
 end
